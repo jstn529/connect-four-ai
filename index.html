@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connect Four vs AI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <h1>Connect Four vs AI</h1>
+      <p class="subtitle">
+        You are <span class="red-text">Red</span>. The AI is <span class="yellow-text">Yellow</span>.
+      </p>
+      <p class="name-tag">Made by Justin Gonzalez</p>
+    </header>
+
+    <section class="controls">
+      <div class="status-box">
+        <h2 id="status">Your turn</h2>
+        <p id="details">Click a column to drop your piece.</p>
+      </div>
+
+      <div class="buttons">
+        <button id="restartBtn">Restart Game</button>
+        <button id="aiFirstBtn">Let AI Go First</button>
+      </div>
+    </section>
+
+    <section class="game-area">
+      <div id="columnButtons" class="column-buttons"></div>
+      <div id="board" class="board"></div>
+    </section>
+
+    <section class="instructions">
+      <h3>How to Play</h3>
+      <p>
+        Drop pieces into the 7-column board. The first to connect 4 in a row
+        horizontally, vertically, or diagonally wins.
+      </p>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
