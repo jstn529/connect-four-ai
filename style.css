@@ -141,6 +141,7 @@ button:hover {
   border-radius: 18px;
   width: min(700px, 95vw);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
 }
 
 .cell {
@@ -149,14 +150,36 @@ button:hover {
   border-radius: 50%;
   background: #e2e8f0;
   border: 3px solid rgba(0, 0, 0, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
-.cell.red {
+.piece {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.piece.red {
   background: #ef4444;
 }
 
-.cell.yellow {
+.piece.yellow {
   background: #facc15;
+}
+
+.piece.drop {
+  animation: dropPiece var(--drop-duration, 0.45s) ease-in forwards;
+}
+
+@keyframes dropPiece {
+  from {
+    transform: translateY(var(--start-offset, -500px));
+  }
+  to {
+    transform: translateY(0);
+  }
 }
 
 .instructions {

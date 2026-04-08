@@ -7,6 +7,8 @@ const EMPTY = 0;
 let board = [];
 let gameOver = false;
 let currentPlayer = HUMAN;
+let animating = false;
+let lastMove = null;
 
 const boardEl = document.getElementById("board");
 const columnButtonsEl = document.getElementById("columnButtons");
@@ -23,6 +25,8 @@ function initGame() {
   board = createEmptyBoard();
   gameOver = false;
   currentPlayer = HUMAN;
+  animating = false;
+  lastMove = null;
   renderColumnButtons();
   renderBoard();
   updateStatus("Your turn", "Click a column to drop your piece.");
@@ -41,15 +45,32 @@ function renderColumnButtons() {
 
 function renderBoard() {
   boardEl.innerHTML = "";
+
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       const cell = document.createElement("div");
       cell.className = "cell";
-      if (board[r][c] === HUMAN) cell.classList.add("red");
-      if (board[r][c] === AI) cell.classList.add("yellow");
+
+      if (board[r][c] !== EMPTY) {
+        const piece = document.createElement("div");
+        piece.className = "piece";
+        piece.classList.add(board[r][c] === HUMAN ? "red" : "yellow");
+
+        if (lastMove && lastMove.row === r && lastMove.col === c) {
+          piece.classList.add("drop");
+          const cellSize = cell.getBoundingClientRect().width || 80;
+          piece.style.setProperty("--start-offset", `${-(r + 1) * (cellSize + 8)}px`);
+          piece.style.setProperty("--drop-duration", `${0.18 + r * 0.06}s`);
+        }
+
+        cell.appendChild(piece);
+      }
+
       boardEl.appendChild(cell);
     }
   }
+
+  lastMove = null;
 }
 
 function updateStatus(title, details) {
@@ -81,55 +102,71 @@ function getValidMoves(tempBoard) {
 }
 
 function handleHumanMove(col) {
-  if (gameOver || currentPlayer !== HUMAN) return;
+  if (gameOver || currentPlayer !== HUMAN || animating) return;
   if (!isValidMove(board, col)) return;
 
   const row = getAvailableRow(board, col);
   dropPiece(board, row, col, HUMAN);
+  lastMove = { row, col };
+  animating = true;
   renderBoard();
 
-  if (winningMove(board, HUMAN)) {
-    gameOver = true;
-    updateStatus("You win!", "Nice job — you beat the AI.");
-    return;
-  }
-
-  if (isBoardFull(board)) {
-    gameOver = true;
-    updateStatus("Draw game", "Nobody wins this round.");
-    return;
-  }
-
-  currentPlayer = AI;
-  updateStatus("AI thinking...", "The AI is choosing a move.");
+  const animationTime = 180 + row * 60;
 
   setTimeout(() => {
-    aiMove();
-  }, 500);
+    animating = false;
+
+    if (winningMove(board, HUMAN)) {
+      gameOver = true;
+      updateStatus("You win!", "Nice job — you beat the AI.");
+      return;
+    }
+
+    if (isBoardFull(board)) {
+      gameOver = true;
+      updateStatus("Draw game", "Nobody wins this round.");
+      return;
+    }
+
+    currentPlayer = AI;
+    updateStatus("AI thinking...", "The AI is choosing a move.");
+
+    setTimeout(() => {
+      aiMove();
+    }, 400);
+  }, animationTime);
 }
 
 function aiMove() {
-  if (gameOver) return;
+  if (gameOver || animating) return;
 
   const col = getBestMove(board, 4);
   const row = getAvailableRow(board, col);
   dropPiece(board, row, col, AI);
+  lastMove = { row, col };
+  animating = true;
   renderBoard();
 
-  if (winningMove(board, AI)) {
-    gameOver = true;
-    updateStatus("AI wins!", "The AI connected four.");
-    return;
-  }
+  const animationTime = 180 + row * 60;
 
-  if (isBoardFull(board)) {
-    gameOver = true;
-    updateStatus("Draw game", "Nobody wins this round.");
-    return;
-  }
+  setTimeout(() => {
+    animating = false;
 
-  currentPlayer = HUMAN;
-  updateStatus("Your turn", "Click a column to drop your piece.");
+    if (winningMove(board, AI)) {
+      gameOver = true;
+      updateStatus("AI wins!", "The AI connected four.");
+      return;
+    }
+
+    if (isBoardFull(board)) {
+      gameOver = true;
+      updateStatus("Draw game", "Nobody wins this round.");
+      return;
+    }
+
+    currentPlayer = HUMAN;
+    updateStatus("Your turn", "Click a column to drop your piece.");
+  }, animationTime);
 }
 
 function isBoardFull(tempBoard) {
@@ -369,7 +406,7 @@ aiFirstBtn.addEventListener("click", () => {
   updateStatus("AI thinking...", "The AI is making the first move.");
   setTimeout(() => {
     aiMove();
-  }, 500);
+  }, 400);
 });
 
 initGame();
